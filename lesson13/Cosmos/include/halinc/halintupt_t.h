@@ -18,6 +18,7 @@ typedef struct s_ILNEDSC
     u32_t ild_clxsubinr;
 }ilnedsc_t;
 
+// 中断异常描述符
 typedef struct s_INTFLTDSC
 {
     spinlock_t  i_lock;
@@ -27,7 +28,8 @@ typedef struct s_INTFLTDSC
     uint_t      i_irqnr;        //中断号
     uint_t      i_deep;         //中断嵌套深度
     u64_t       i_indx;         //中断计数
-    list_h_t    i_serlist;
+    list_h_t    i_serlist;      // 中断控制器最多只能产生几十号中断号，而设备不止几十个，所以会有多个设备共享一根中断信号线
+                                // 实际会遍历所有的
     uint_t      i_sernr;
     list_h_t    i_serthrdlst;   //中断线程链表头
     uint_t      i_serthrdnr;    //中断线程个数
@@ -40,6 +42,8 @@ typedef struct s_INTFLTDSC
     void*       i_extp;
 }intfltdsc_t;
 
+// 中断异常描述符中实际的回调动作则是放在了下面这个结构体中
+// 内核或设备驱动程序需要添加新的中断回调函数,则是创建一个新的intserdsc_t结构,并将其挂到某个中断异常描述符的i_serlist列表中
 typedef struct s_INTSERDSC
 {
     list_h_t    s_list;
@@ -54,7 +58,7 @@ typedef struct s_INTSERDSC
 typedef struct s_KITHREAD
 {
     spinlock_t  kit_lock;
-    list_h_t    kit_list; 
+    list_h_t    kit_list;
     u32_t       kit_flg;
     u32_t       kit_stus;
     uint_t      kit_prity;

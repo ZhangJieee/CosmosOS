@@ -8,7 +8,9 @@
 
 void hal_start()
 {
+    // 初始化hal层
     init_hal();
+    // 初始化内核层
     init_krl();
     return;
 }

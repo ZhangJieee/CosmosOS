@@ -41,14 +41,20 @@ void init_intfltdsc()
 
 PUBLIC void init_halintupt()
 {
+    // 初始化GDT描述符 x64_gdt
     init_descriptor();
+    // 初始化IDT描述符 x64_idt,绑定中断编号及中断处理函数
     init_idt_descriptor();
+    // 初始化中断异常表machintflt
     init_intfltdsc();
+    // 初始化8529芯片中断,最后会屏蔽全部中断源,因为OS初始化阶段不能处理中断
     init_i8259();
+    // 取消屏蔽字,开始接收中断请求
     i8259_enabled_line(0);
     return;
 }
 
+// 根据中断编号获取中断异常描述符地址
 PUBLIC intfltdsc_t *hal_retn_intfltdsc(uint_t irqnr)
 {
     if (irqnr > IDTMAX)
@@ -126,9 +132,12 @@ void hal_run_intflthandle(uint_t ifdnr, void *sframe)
         return;
     }
 
+    // 遍历i_serlist链表
     list_for_each(lst, &ifdscp->i_serlist)
     {
+        // 获取i_serlist链表上对象即intserdsc_t结构
         isdscp = list_entry(lst, intserdsc_t, s_list);
+        // 调用中断处理回调函数
         isdscp->s_handle(ifdnr, isdscp->s_device, sframe);
     }
 
@@ -153,6 +162,7 @@ void hal_do_hwint(uint_t intnumb, void *krnlsframp)
     hal_spinlock_saveflg_cli(&ifdscp->i_lock, &cpuflg);
     ifdscp->i_indx++;
     ifdscp->i_deep++;
+    // 执行中断回调动作
     hal_run_intflthandle(intnumb, krnlsframp);
     ifdscp->i_deep--;
     hal_spinunlock_restflg_sti(&ifdscp->i_lock, &cpuflg);
@@ -169,9 +179,10 @@ void hal_fault_allocator(uint_t faultnumb, void *krnlsframp)
 
 sysstus_t hal_syscl_allocator(uint_t sys_nr,void* msgp)
 {
-	return 0; 
+	return 0;
 }
 
+// 硬件中断的回调,注册是放在kernel.asm文件中,输入为中断编号,
 void hal_hwint_allocator(uint_t intnumb, void *krnlsframp)
 {
     i8259_send_eoi();

@@ -27,6 +27,7 @@ void phymmarge_t_init(phymmarge_t *initp)
     return;
 }
 
+// 申请和e820数组相同个数的phymmarge_t结构实例
 void ret_phymmarge_adrandsz(machbstart_t *mbsp, phymmarge_t **retpmrvadr, u64_t *retpmrsz)
 {
     if (NULL == mbsp || 0 == mbsp->mb_e820sz || NULL == mbsp->mb_e820padr || 0 == mbsp->mb_e820nr)
@@ -146,6 +147,7 @@ void init_phymmarge()
     machbstart_t *mbsp = &kmachbsp;
     phymmarge_t *pmarge_adr = NULL;
     u64_t pmrgesz = 0;
+    // 申请phymmarge_t
     ret_phymmarge_adrandsz(mbsp, &pmarge_adr, &pmrgesz);
     if (NULL == pmarge_adr || 0 == pmrgesz)
     {
@@ -158,7 +160,9 @@ void init_phymmarge()
         system_error("init_phymmarge->tmppmrphyadr!=pmarge_adr2phyadr\n");
         return;
     }
+    // 获取e802map_t数组的首地址
     e820map_t *e8p = (e820map_t *)((adr_t)(mbsp->mb_e820padr));
+    // 将e802map_t数组信息拷贝到phymmarge_t数组中
     u64_t ipmgnr = initpmrge_core(e8p, mbsp->mb_e820nr, pmarge_adr);
     if (ipmgnr == 0)
     {
@@ -174,6 +178,7 @@ void init_phymmarge()
     mbsp->mb_e820exnr = ipmgnr;
     mbsp->mb_e820exsz = ipmgnr * sizeof(phymmarge_t);
     mbsp->mb_nextwtpadr = PAGE_ALIGN(mbsp->mb_e820expadr + mbsp->mb_e820exsz);
+    // 最后按照内存地址进行升序排序
     phymmarge_sort(pmarge_adr, ipmgnr);
     return;
 }

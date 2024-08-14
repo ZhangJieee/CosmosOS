@@ -74,6 +74,7 @@ global  asm_ret_from_user_mode
 %define _NOERRO_CODE 0xffffffffffffffff
 
 
+// 保存中断后的寄存器
 %macro	SAVEALL	0
 
 	push rax
@@ -83,7 +84,7 @@ global  asm_ret_from_user_mode
 	push rbp
 	push rsi
 	push rdi
-	
+
 	push r8
 	push r9
 	push r10
@@ -92,9 +93,9 @@ global  asm_ret_from_user_mode
 	push r13
 	push r14
 	push r15
-	
+
 	xor r14,r14
-	
+
 	mov r14w,ds
 	push r14
 	mov r14w,es
@@ -103,15 +104,15 @@ global  asm_ret_from_user_mode
 	push r14
 	mov r14w,gs
 	push r14
-	
+
 	;push    ds
 	;push    es
 	;push    fs
 	;push    gs
-	
+
 %endmacro
 
-
+// 恢复中断后的寄存器
 %macro	RESTOREALL	0
    	;pop	gs
 	;pop	fs
@@ -119,14 +120,14 @@ global  asm_ret_from_user_mode
 	;pop	ds
 	pop r14
 	mov gs,r14w
-	pop r14 
+	pop r14
 	mov fs,r14w
 	pop r14
 	mov es,r14w
 	pop r14
 	mov ds,r14w
-	 
-	
+
+
 	pop r15
 	pop r14
 	pop r13
@@ -135,7 +136,7 @@ global  asm_ret_from_user_mode
 	pop r10
 	pop r9
 	pop r8
-	
+
 	pop rdi
 	pop rsi
 	pop rbp
@@ -143,10 +144,11 @@ global  asm_ret_from_user_mode
 	pop rcx
 	pop rbx
 	pop rax
-	
+
 	iretq
 %endmacro
 
+// 保护异常下的寄存器
 %macro	SAVEALLFAULT 0
 	push rax
 	push rbx
@@ -155,7 +157,7 @@ global  asm_ret_from_user_mode
 	push rbp
 	push rsi
 	push rdi
-	
+
 	push r8
 	push r9
 	push r10
@@ -174,20 +176,21 @@ global  asm_ret_from_user_mode
 	mov r14w,gs
 	push r14
 
-	
+
 %endmacro
 
+// 恢复异常下的寄存器
 %macro	RESTOREALLFAULT	0
 
 	pop r14
 	mov gs,r14w
-	pop r14 
+	pop r14
 	mov fs,r14w
 	pop r14
 	mov es,r14w
 	pop r14
 	mov ds,r14w
-	
+
 	pop r15
 	pop r14
 	pop r13
@@ -196,7 +199,7 @@ global  asm_ret_from_user_mode
 	pop r10
 	pop r9
 	pop r8
-	
+
 	pop rdi
 	pop rsi
 	pop rbp
@@ -204,11 +207,12 @@ global  asm_ret_from_user_mode
 	pop rcx
 	pop rbx
 	pop rax
-	
+
 	add rsp,8
 	iretq
 %endmacro
 
+// 没有错误码的CPU异常,通常会将一个常量压栈,兼容考虑
 %macro	SRFTFAULT 1
 	push	  _NOERRO_CODE
 	SAVEALLFAULT
@@ -224,6 +228,7 @@ global  asm_ret_from_user_mode
 	RESTOREALLFAULT
 %endmacro
 
+// 有错误码的CPU异常
 %macro	SRFTFAULT_ECODE 1
 	SAVEALLFAULT
 	mov r14w,0x10
@@ -238,19 +243,19 @@ global  asm_ret_from_user_mode
 	RESTOREALLFAULT
 %endmacro
 
-
+// 硬件中断
 %macro	HARWINT	1
 	SAVEALL
-	
+
 	mov r14w,0x10
 	mov ds,r14w
 	mov es,r14w
 	mov fs,r14w
 	mov gs,r14w
 
-	mov	rdi, %1
-	mov 	rsi,rsp
-	call    hal_hwint_allocator
+	mov	rdi, %1                  ; 中断编号参数rdi
+	mov 	rsi,rsp              ; 中断发生时的栈指针rsi
+	call    hal_hwint_allocator  ; 发生硬件中断时会先到达中断入口函数(即kernel.asm文件中定义的入口),接着调用hal_hwint_allocator回调函数
 
 	RESTOREALL
 %endmacro
@@ -258,7 +263,7 @@ global  asm_ret_from_user_mode
 
 
 %macro  EXI_SCALL  0
-	
+
 	;push rax
 	push rbx
 	push rcx
@@ -266,7 +271,7 @@ global  asm_ret_from_user_mode
 	push rbp
 	push rsi
 	push rdi
-	
+
 	push r8
 	push r9
 	push r10
@@ -275,9 +280,9 @@ global  asm_ret_from_user_mode
 	push r13
 	push r14
 	push r15
-	
+
 	xor r14,r14
-	
+
 	mov r14w,ds
 	push r14
 	mov r14w,es
@@ -286,7 +291,7 @@ global  asm_ret_from_user_mode
 	push r14
 	mov r14w,gs
 	push r14
-	
+
 	mov r14w,0x10
 	mov ds,r14w
 	mov es,r14w
@@ -294,17 +299,17 @@ global  asm_ret_from_user_mode
 	mov gs,r14w
 
 	call   	hal_syscl_allocator
-	
+
 	pop r14
 	mov gs,r14w
-	pop r14 
+	pop r14
 	mov fs,r14w
 	pop r14
 	mov es,r14w
 	pop r14
 	mov ds,r14w
-	 
-	
+
+
 	pop r15
 	pop r14
 	pop r13
@@ -313,7 +318,7 @@ global  asm_ret_from_user_mode
 	pop r10
 	pop r9
 	pop r8
-	
+
 	pop rdi
 	pop rsi
 	pop rbp
@@ -321,6 +326,6 @@ global  asm_ret_from_user_mode
 	pop rcx
 	pop rbx
 	;pop rax
-	
+
 	iretq
 %endmacro

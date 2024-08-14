@@ -1,12 +1,13 @@
 ;*****************************************************************************
 ;*		底层核心文件Kernel.asm				    *
-;*				彭东 
+;*				彭东
 ;*****************************************************************************
 
 %include "kernel.inc"
 [section .hwint.text]
 [BITS 64]
 
+; 定义多个中断异常编号和对应的中断入口函数
 ALIGN	16
 exc_divide_error:
 	SRFTFAULT 0
@@ -67,8 +68,8 @@ exc_simd_fault:
 ALIGN	16
 hxi_exc_general_intpfault:
 	SRFTFAULT 256
-	
-	
+
+
 ALIGN	16
 hxi_hwint00:
 	HARWINT	(INT_VECTOR_IRQ0+0)
@@ -124,19 +125,19 @@ hxi_hwint16:
 ALIGN	16
 hxi_hwint17:
 	HARWINT	(INT_VECTOR_IRQ0+17)
-	
+
 ALIGN	16
 hxi_hwint18:
 	HARWINT	(INT_VECTOR_IRQ0+18)
-	
+
 ALIGN	16
 hxi_hwint19:
 	HARWINT	(INT_VECTOR_IRQ0+19)
-	
+
 ALIGN	16
 hxi_hwint20:
 	HARWINT	(INT_VECTOR_IRQ0+20)
-	
+
 ALIGN	16
 hxi_hwint21:
 	HARWINT	(INT_VECTOR_IRQ0+21)
@@ -147,28 +148,28 @@ hxi_hwint22:
 ALIGN	16
 hxi_hwint23:
 	HARWINT	(INT_VECTOR_IRQ0+23)
-				
+
 ALIGN	16
 hxi_apic_ipi_schedul:
-	HARWINT	INT_VECTOR_APIC_IPI_SCHEDUL		
+	HARWINT	INT_VECTOR_APIC_IPI_SCHEDUL
 ALIGN	16
 hxi_apic_svr:
-	HARWINT	INT_VECTOR_APIC_SVR	
+	HARWINT	INT_VECTOR_APIC_SVR
 ALIGN	16
 hxi_apic_timer:
-	HARWINT	INT_VECTOR_APIC_TIMER	
+	HARWINT	INT_VECTOR_APIC_TIMER
 ALIGN	16
 hxi_apic_thermal:
-	HARWINT	INT_VECTOR_APIC_THERMAL	
+	HARWINT	INT_VECTOR_APIC_THERMAL
 ALIGN	16
 hxi_apic_performonitor:
-	HARWINT	INT_VECTOR_APIC_PERFORM	
+	HARWINT	INT_VECTOR_APIC_PERFORM
 ALIGN	16
 hxi_apic_lint0:
-	HARWINT	INT_VECTOR_APIC_LINTO	
+	HARWINT	INT_VECTOR_APIC_LINTO
 ALIGN	16
 hxi_apic_lint1:
-	HARWINT	INT_VECTOR_APIC_LINTI	
+	HARWINT	INT_VECTOR_APIC_LINTI
 ALIGN	16
 hxi_apic_error:
 	HARWINT	INT_VECTOR_APIC_ERROR
